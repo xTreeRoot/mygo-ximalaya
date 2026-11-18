@@ -2,7 +2,7 @@
 
 面向 [MyGo Music](https://github.com/egoist/mygo-music) 的独立喜马拉雅插件，无需额外服务。
 
-需要 **MyGo Music 0.1.20 或更新版本**。当前为 `0.1.4` 开发版。
+需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.5`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。
 
 ## 功能
 
@@ -28,12 +28,12 @@
 本插件已公开发布，可直接从 GitHub 安装。需要 MyGo Music 0.1.20 或更新版本。
 
 1. 打开 MyGo Music → 设置 → 插件 → `+` → 从 GitHub 安装。
-2. 输入 `specialhua/mygo-ximalaya`，确认安装。
+2. 输入 `xTreeRoot/mygo-ximalaya`，确认安装。
 3. 在来源选择器切换到「喜马拉雅」，点击登录，在弹出的官方网页中扫码。
 
-已安装 MyGo Music 时，也可使用 [一键安装](mygo-music://install-plugin?repo=specialhua/mygo-ximalaya)。
+已安装 MyGo Music 时，也可使用 [一键安装](mygo-music://install-plugin?repo=xTreeRoot/mygo-ximalaya)。
 
-也可以下载 [源码 ZIP](https://github.com/specialhua/mygo-ximalaya/archive/refs/heads/main.zip)，解压后从本地文件夹安装包含 `plugin.json` 的目录。
+也可以下载 [源码 ZIP](https://github.com/xTreeRoot/mygo-ximalaya/archive/refs/heads/main.zip)，解压后从本地文件夹安装包含 `plugin.json` 的目录。
 
 仓库已包含构建后的 `index.js`，使用插件不需要安装 Node、Python 或依赖。
 
@@ -47,6 +47,8 @@
 `0.1.3` 接入网页版云端历史，「最近收听」展示云端记录，原有本地历史移到「本机记录」。云端历史列表是只读的，读取历史不等于回写播放进度或自动断点续播。
 
 `0.1.4` 同音质档位优先选择 MP3，避免部分专辑的 M4A 实为 HE-AACv2（SBR/PS）、超出 MyGo AAC-LC 解码器支持范围而报 `go-aac/pcm: unsupported stream`。已确认「魔鬼积木」有这一编码差异。
+
+`0.1.5` 修复 MB iOS 全局选择无损后，喜马拉雅单集缺少 FLAC 而无法播放：由插件按已返回的可用格式自动降级，同音质档位仍优先 MP3。
 
 ## 开发
 
@@ -89,7 +91,7 @@ plugin.json       MyGo 插件清单
 - 退出只清除本插件的会话，不注销其他客户端；本地浏览和收听记录保留，云端历史不会混入本机列表。
 - 支持读取云端历史；不回写云端播放进度，不自动跳转到云端断点。MyGo 当前的流媒体插件回调只有单集 ID，没有持续播放位置回调。
 - 不支持在线订阅修改、评论写入、购买或离线批量下载。
-- 标准/高音质按实际返回格式选择；请求无损但没有 FLAC 时会明确报错。
+- 请求无损时优先选择 FLAC；单集未提供 FLAC 时自动降为高音质，再降为可用的标准音质，返回实际音质。
 - 同档位优先选择 MP3。若服务只提供 HE-AAC 的 M4A/AAC，仍可能受 MyGo 解码器限制；本插件不自带转码服务。
 - 首版以 macOS 为验收目标；Windows/Linux 的网页登录窗口仍需分别验证。
 

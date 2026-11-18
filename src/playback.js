@@ -59,13 +59,14 @@ export function selectStream(body, quality) {
   if (!formats.length) throw fail("unavailable", "该单集没有 MyGo 支持的音频格式");
   // A free/trailer episode in a paid album may legitimately have sampleSize > 0.
   // Authorization above and preview URL checks distinguish it from a sample.
-  const lossless = quality === "lossless";
-  const candidates = lossless ? formats.filter((audio) => mediaType(audio.type) === "flac") : formats;
-  if (!candidates.length) throw fail("unavailable", "该单集未提供可用的无损音质");
+  const losslessFormats = formats.filter((audio) => mediaType(audio.type) === "flac");
+  // The web endpoint can return only lossy variants even when requesting level 3.
+  // Use the best available high/standard variant when this episode has no FLAC.
+  const candidates = quality === "lossless" && losslessFormats.length ? losslessFormats : formats;
   const target = quality === "standard" ? 0 : 1;
   // Ximalaya's M4A_64 can contain HE-AACv2 (SBR/PS), which MyGo's AAC-LC
   // decoder rejects. Prefer MP3 within the same service quality tier. Keep
-  // quality ahead of codec preference; do not silently choose a lower tier.
+  // quality ahead of codec preference within the available variants.
   const codecRank = { mp3: 0, m4a: 1, aac: 2, flac: 3 };
   const rank = (a) => Math.abs(Number(a.qualityLevel ?? 1) - target) * 10 + codecRank[mediaType(a.type)];
   const audio = [...candidates].sort((a, b) => rank(a) - rank(b))[0];

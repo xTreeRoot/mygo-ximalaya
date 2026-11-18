@@ -198,9 +198,9 @@ test("purchase authorization is required even if a paid response contains URLs",
   assert.throws(() => selectStream(audioResponse("123", { isPaid: true, isAuthorized: undefined }), "high"), { code: "unavailable" });
 });
 
-test("preview audio and unsupported lossless requests are rejected", () => {
+test("preview audio remains unavailable when requesting high or lossless quality", () => {
   assert.throws(() => selectStream(audioResponse("123", { playUrlList: [{ type: "M4A_64", url: encryptedURL("https://audio.xmcdn.com/_preview_/test.m4a") }] }), "high"), { code: "unavailable" });
-  assert.throws(() => selectStream(audioResponse(), "lossless"), /无损/);
+  assert.throws(() => selectStream(audioResponse("123", { playUrlList: [{ type: "M4A_64", url: encryptedURL("https://audio.xmcdn.com/_preview_/test.m4a") }] }), "lossless"), { code: "unavailable" });
 });
 
 // Regression: the M4A_64 variant of 魔鬼积木 is HE-AACv2 (SBR/PS), rejected
@@ -229,7 +229,8 @@ test("codec preference does not replace a requested tier with a different-tier M
     { type: "MP3_32", qualityLevel: 0, url: encryptedURL("https://audio.xmcdn.com/standard.mp3") },
   ] });
   assert.equal(selectStream(body, "high").type, "m4a");
-  assert.throws(() => selectStream(body, "lossless"), { code: "unavailable" });
+  assert.equal(selectStream(body, "lossless").type, "m4a");
+  assert.equal(selectStream(body, "lossless").quality, "high");
 });
 
 test("encrypted playback URLs cannot point to private or third-party hosts", () => {
@@ -402,4 +403,46 @@ test("HTML text and image inputs cannot introduce arbitrary schemes", () => {
   assert.equal(text("<p>&lt;唐诗&gt;</p><script>bad()</script>"), "<唐诗>");
   assert.equal(imageURL("https://evil.example/cover.jpg"), "");
   assert.equal(imageURL("//imagev2.xmcdn.com/test.jpg"), "https://imagev2.xmcdn.com/test.jpg");
+});
+
+
+test("lossless requests prefer FLAC and otherwise fall back to high then standard", () => {
+  const standard = { type: "MP3_32", qualityLevel: 0, fileSize: 500, url: encryptedURL("https://audio.xmcdn.com/standard.mp3") };
+  const highM4A = { type: "M4A_64", qualityLevel: 1, fileSize: 1000, url: encryptedURL("https://audio.xmcdn.com/high.m4a") };
+  const highMP3 = { type: "MP3_64", qualityLevel: 1, fileSize: 1200, url: encryptedURL("https://audio.xmcdn.com/high.mp3") };
+  const flac = { type: "FLAC", qualityLevel: 3, fileSize: 4000, url: encryptedURL("https://audio.xmcdn.com/lossless.flac") };
+  for (const [formats, expectedType, actualQuality, expectedSize] of [
+    [[standard, highM4A, highMP3, flac], "flac", "lossless", 4000],
+    [[standard, highM4A, highMP3], "mp3", "high", 1200],
+    [[standard], "mp3", "standard", 500],
+  ]) {
+    const selected = selectStream(audioResponse("123", { playUrlList: formats }), "lossless");
+    assert.equal(selected.type, expectedType);
+    assert.equal(selected.quality, actualQuality);
+    assert.equal(selected.size, expectedSize);
+    assert.equal(selected.headers.Cookie, undefined);
+  }
+});
+
+test("the distributed stream entry downgrades lossless with one metadata request", async () => {
+  const { plugin, requests } = await loadPlugin(() => json(audioResponse("123", { playUrlList: [
+    { type: "MP3_32", qualityLevel: 0, url: encryptedURL("https://audio.xmcdn.com/standard.mp3") },
+  ] })));
+  const audio = await plugin.stream({ id: "123", quality: "lossless" });
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url.searchParams.get("trackQualityLevel"), "3");
+  assert.equal(audio.quality, "standard");
+  assert.equal(audio.type, "mp3");
+});
+
+test("lossless fallback preserves authorization, missing-format and wrong-track failures", async () => {
+  for (const flags of [
+    { isPaid: true, isAuthorized: false }, { isPaid: true, isAuthorized: undefined },
+    { playUrlList: [] }, { playUrlList: [{ type: "UNKNOWN", url: "https://audio.xmcdn.com/test" }] },
+  ]) {
+    assert.throws(() => selectStream(audioResponse("123", flags), "lossless"), { code: "unavailable" });
+  }
+  const { plugin, requests } = await loadPlugin(() => json(audioResponse("999")));
+  await assert.rejects(plugin.stream({ id: "123", quality: "lossless" }), /单集不匹配/);
+  assert.equal(requests.length, 1);
 });

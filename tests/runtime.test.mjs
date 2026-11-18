@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { getQuickJS } from "quickjs-emscripten";
-import { encryptedURL } from "./helpers.mjs";
+import { audioResponse, encryptedURL } from "./helpers.mjs";
 
 test("the distributed module and AES decoder run in QuickJS without Node globals", async () => {
   const engine = await getQuickJS();
@@ -27,7 +27,7 @@ test("the distributed module and AES decoder run in QuickJS without Node globals
       };
     `)).dispose();
     const source = await readFile(new URL("../index.js", import.meta.url), "utf8");
-    const exports = vm.unwrapResult(vm.evalCode(source + "\nexport { decodePlayURL as __testDecode };", "index.js", { type: "module" }));
+    const exports = vm.unwrapResult(vm.evalCode(source + "\nexport { decodePlayURL as __testDecode, selectStream as __testSelect };", "index.js", { type: "module" }));
     vm.setProp(vm.global, "plugin", exports);
     exports.dispose();
     vm.unwrapResult(vm.evalCode(`globalThis.host = { storage: { get() { return null; } } };`)).dispose();
@@ -38,5 +38,8 @@ test("the distributed module and AES decoder run in QuickJS without Node globals
     const decoded = vm.unwrapResult(vm.evalCode(`plugin.__testDecode(${JSON.stringify(encryptedURL(url))})`));
     assert.equal(vm.getString(decoded), url);
     decoded.dispose();
+    const selected = vm.unwrapResult(vm.evalCode(`JSON.stringify(plugin.__testSelect(${JSON.stringify(audioResponse())}, "lossless"))`));
+    assert.equal(JSON.parse(vm.getString(selected)).quality, "high");
+    selected.dispose();
   } finally { vm.dispose(); }
 });

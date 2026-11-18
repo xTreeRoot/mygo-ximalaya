@@ -31,3 +31,10 @@ Build and test tooling is development-only and is not included in the plugin ZIP
 Ximalaya and MyGo Music names and content belong to their respective owners.
 This is an unofficial plugin. Playback uses the service's returned permissions;
 the plugin does not grant access to content a listener is not entitled to play.
+
+
+MB compatibility changes by xTreeRoot on 2026-11-19 are based on
+specialhua/mygo-ximalaya commit `5084fa6` (version 0.1.4). When an episode
+has no FLAC variant, lossless requests use an available high/standard variant
+and report the actual quality. Source: https://github.com/xTreeRoot/mygo-ximalaya,
+under the same AGPL-3.0-only license.

@@ -896,9 +896,8 @@ function selectStream(body, quality) {
   }
   const formats = track.playUrlList.filter((audio2) => audio2?.url && mediaType(audio2.type));
   if (!formats.length) throw fail("unavailable", "该单集没有 MyGo 支持的音频格式");
-  const lossless = quality === "lossless";
-  const candidates = lossless ? formats.filter((audio2) => mediaType(audio2.type) === "flac") : formats;
-  if (!candidates.length) throw fail("unavailable", "该单集未提供可用的无损音质");
+  const losslessFormats = formats.filter((audio2) => mediaType(audio2.type) === "flac");
+  const candidates = quality === "lossless" && losslessFormats.length ? losslessFormats : formats;
   const target = quality === "standard" ? 0 : 1;
   const codecRank = { mp3: 0, m4a: 1, aac: 2, flac: 3 };
   const rank = (a) => Math.abs(Number(a.qualityLevel ?? 1) - target) * 10 + codecRank[mediaType(a.type)];
