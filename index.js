@@ -232,17 +232,19 @@ async function requireAccount() {
   return me;
 }
 async function signIn() {
+  const message = "当前宿主不支持喜马拉雅网页登录，可继续浏览和播放公开节目";
+  if (typeof host.webSignIn !== "function") throw fail("setup", message);
   const started = beginSignIn();
-  if (typeof host.webSignIn !== "function") throw fail("setup", "请更新 MyGo Music 后使用网页登录");
   host.signInPrompt({ text: "请在喜马拉雅登录窗口中扫码，并在手机上确认登录" });
   const loginURL = new URL("https://passport.ximalaya.com/page/web/login");
   loginURL.searchParams.set("fromUri", SITE + "/");
-  const result = await host.webSignIn({
-    url: loginURL.toString(),
-    cookiesOf: SITE + "/",
-    until: [AUTH_COOKIE],
-    userAgent: USER_AGENT
-  });
+  let result;
+  try {
+    result = await host.webSignIn({ url: loginURL.toString(), cookiesOf: SITE + "/", until: [AUTH_COOKIE], userAgent: USER_AGENT });
+  } catch (error) {
+    if (host.platform === "android" && error.message === "Host request is unavailable on Android") throw fail("setup", message);
+    throw error;
+  }
   assertCurrent(started);
   const pending2 = { cookies: parseCookies(result?.cookie), profile: null, checkedAt: 0 };
   if (!signedIn(pending2)) throw fail("signIn", "登录窗口未返回有效会话，请重新登录");
@@ -936,6 +938,9 @@ async function stream({ id, quality = "high" }) {
 function signOut() {
   clearSession();
 }
+function cancelSignIn() {
+  beginSignIn();
+}
 async function recent2() {
   if (!signedIn()) return [];
   return (await historyPage(1)).tracks;
@@ -987,6 +992,7 @@ async function browse({ page }) {
 export {
   account,
   browse,
+  cancelSignIn,
   home,
   played,
   recent2 as recent,

@@ -2,7 +2,7 @@
 
 面向 [MyGo Music](https://github.com/egoist/mygo-music) 的独立喜马拉雅插件，无需额外服务。
 
-需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.5`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。
+需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.6`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。桌面、iOS 与 Android 使用同一份脚本和安装包。
 
 ## 功能
 
@@ -49,6 +49,8 @@
 `0.1.4` 同音质档位优先选择 MP3，避免部分专辑的 M4A 实为 HE-AACv2（SBR/PS）、超出 MyGo AAC-LC 解码器支持范围而报 `go-aac/pcm: unsupported stream`。已确认「魔鬼积木」有这一编码差异。
 
 `0.1.5` 修复 MB iOS 全局选择无损后，喜马拉雅单集缺少 FLAC 而无法播放：由插件按已返回的可用格式自动降级，同音质档位仍优先 MP3。
+
+`0.1.6` 支持宿主取消登录后丢弃迟到的扫码结果；当前 Android 宿主未接网页扫码桥接，缺少桥接时仍保留公开搜索与播放。插件只提供音频，不声明视频播放；喜马拉雅会话未验证可以跨设备迁移，不导出凭据。
 
 ## 开发
 

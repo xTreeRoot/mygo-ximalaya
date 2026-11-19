@@ -50,6 +50,29 @@ test("a canceled login keeps the previous session intact", async () => {
   assert.match(storage.get("session").cookie, /synthetic-old/);
 });
 
+test("a host cancellation discards a late web login without affecting the prior account", async () => {
+  const { plugin, host, storage, requests } = await loadPlugin(profile, savedSession());
+  let finish;
+  host.webSignIn = () => new Promise(resolve => { finish = resolve; });
+  const pending = plugin.signIn();
+  plugin.cancelSignIn();
+  finish({ cookie: "1&_token=synthetic-login" });
+  await assert.rejects(pending, /账号状态已改变/);
+  assert.match(storage.get("session").cookie, /synthetic-old/);
+  assert.equal(requests.length, 0);
+});
+
+test("Android without a web sign-in bridge keeps guest functions usable", async () => {
+  const { plugin, host, storage } = await loadPlugin();
+  host.platform = "android";
+  host.webSignIn = async () => { throw new Error("Host request is unavailable on Android"); };
+  await assert.rejects(plugin.signIn(), { code: "setup", message: /可继续浏览/ });
+  assert.equal(await plugin.account(), null);
+  assert.equal(storage.has("session"), false);
+  assert.equal(plugin.video, undefined);
+  assert.equal(plugin.exportSession, undefined);
+});
+
 test("sign-out during login cannot resurrect the session", async () => {
   const { plugin, host, storage } = await loadPlugin(profile);
   let finish;

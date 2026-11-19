@@ -1,12 +1,13 @@
 import { fail } from "./utils.js";
 import { account, requireAccount, signIn } from "./auth.js";
-import { clearSession, signedIn } from "./session.js";
+import { beginSignIn, clearSession, signedIn } from "./session.js";
 import { history, historyPage, played, purchasePage, purchases, recent as localRecent, recommendations, search, show, subscriptionPage, subscriptions } from "./catalog.js";
 
 export { account, played, search, show, signIn };
 export { stream } from "./playback.js";
 
 export function signOut() { clearSession(); }
+export function cancelSignIn() { beginSignIn(); }
 
 export async function recent() {
   if (!signedIn()) return [];
