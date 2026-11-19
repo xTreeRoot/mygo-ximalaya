@@ -2,7 +2,7 @@
 
 面向 [MyGo Music](https://github.com/egoist/mygo-music) 的独立喜马拉雅插件，无需额外服务。
 
-需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.6`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。桌面、iOS 与 Android 使用同一份脚本和安装包。
+需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.7`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。桌面、iOS 与 Android 使用同一份脚本和安装包。
 
 ## 功能
 
@@ -67,7 +67,7 @@ npm run pack
 
 `npm test` 使用模拟接口验证错误处理、会话并发、分页、授权、地址校验，并在 QuickJS 中验证打包模块与 AES 解码。它不访问网络。
 
-`npm run smoke` 是手动运行的公开接口检查：不读取真实用户会话、不登录、不修改服务端数据，只读取少量音频字节。它不覆盖真实账号或 VIP 权限测试。
+`npm run smoke` 是手动运行的公开接口检查：不读取真实用户会话、不登录、不修改服务端数据。它验证公开长单集重新解析后能读取非零字节区间，不覆盖真实账号或 VIP 权限测试。
 
 ```text
 src/index.js       MyGo 导出和首页
