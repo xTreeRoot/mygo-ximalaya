@@ -100,3 +100,7 @@ plugin.json       MyGo 插件清单
 ## 许可
 
 AGPL-3.0-only。依赖和协议参考见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 0.1.9
+
+新增主播主页，展示头像、介绍、作品和节目专辑；作品支持触底分页，正确转换官网时长。

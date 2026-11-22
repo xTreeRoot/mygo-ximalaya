@@ -274,7 +274,8 @@ function toTrack(record, album = {}) {
   const id = idOf(record.trackId ?? record.id);
   const showId = record.albumId ?? album.id ?? album.albumId;
   const author = record.anchorId ?? record.anchorUid ?? record.uid;
-  const duration = positive(record.duration ?? record.length);
+  const clock = typeof record.durationAsString === "string" && /^\d{1,3}:\d{2}(?::\d{2})?$/.test(record.durationAsString) ? record.durationAsString.split(":").reduce((sum, part) => sum * 60 + Number(part), 0) : 0;
+  const duration = positive(record.duration ?? record.length ?? clock);
   const track = {
     id,
     name: text(record.trackName || record.title || record.name) || "未命名单集",
@@ -467,6 +468,28 @@ async function played({ id }) {
   const track = tracks.get(id) || await loadTrack(id);
   assertCurrent(generation2);
   host.storage.set("recent", [track, ...recent().filter((item) => item.id !== id)].slice(0, 50));
+}
+async function artist({ id, offset = 0 }) {
+  id = idOf(id);
+  offset = offsetOf(offset);
+  const page = Math.floor(offset / PAGE_SIZE) + 1;
+  const { data: info } = await request("/revision/user/basic", { uid: id });
+  if (!info || String(info.uid) !== id || !info.nickName) throw fail("unavailable", "主播不存在或已下架");
+  const { data } = await request("/revision/user/track", { uid: id, page, pageSize: PAGE_SIZE, keyWord: "" });
+  if (!data || !Array.isArray(data.trackList) || Number(data.page) !== page) throw new Error("喜马拉雅主播作品响应无效");
+  let shows = [];
+  if (offset === 0) {
+    try {
+      const { data: albums2 } = await request("/revision/user/pub", { uid: id, page: 1, pageSize: PAGE_SIZE, keyWord: "" });
+      if (Array.isArray(albums2?.albumList)) shows = albums2.albumList.map((item) => toShow({ ...item, anchorName: info.nickName }));
+    } catch (error) {
+      if (error.code === "signIn") throw error;
+    }
+  }
+  const items = data.trackList.slice(offset % PAGE_SIZE).map((item) => rememberTrack(toTrack({ ...item, anchorUid: id, nickname: info.nickName })));
+  const more = hasMore(data, data.trackList.length, (page - 1) * PAGE_SIZE + data.trackList.length, data.maxCount ?? data.totalCount);
+  if (more && !items.length) throw new Error("喜马拉雅主播分页未前进");
+  return { artist: { id, name: info.nickName, imageUrl: imageURL(info.cover), description: text(info.personalDescription || info.personalSignature) }, tracks: items, shows, more };
 }
 
 // node_modules/@noble/ciphers/utils.js
@@ -995,6 +1018,7 @@ async function browse({ page }) {
 }
 export {
   account,
+  artist,
   browse,
   cancelSignIn,
   home,

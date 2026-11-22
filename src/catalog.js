@@ -1,4 +1,4 @@
-import { PAGE_SIZE, fail, hasMore, idOf, offsetOf, parseLink } from "./utils.js";
+import { PAGE_SIZE, fail, hasMore, idOf, offsetOf, parseLink, imageURL, text } from "./utils.js";
 import { request } from "./client.js";
 import { requireAccount } from "./auth.js";
 import { assertCurrent, epoch } from "./session.js";
@@ -194,4 +194,25 @@ export async function played({ id }) {
   const track = tracks.get(id) || await loadTrack(id);
   assertCurrent(generation);
   host.storage.set("recent", [track, ...recent().filter((item) => item.id !== id)].slice(0, 50));
+}
+
+/** 主播主页复用官网 basic、track、pub 合同；作品由宿主触底按 offset 分页。 */
+export async function artist({ id, offset = 0 }) {
+  id = idOf(id); offset = offsetOf(offset);
+  const page = Math.floor(offset / PAGE_SIZE) + 1;
+  const { data: info } = await request('/revision/user/basic', { uid: id });
+  if (!info || String(info.uid) !== id || !info.nickName) throw fail('unavailable', '主播不存在或已下架');
+  const { data } = await request('/revision/user/track', { uid: id, page, pageSize: PAGE_SIZE, keyWord: '' });
+  if (!data || !Array.isArray(data.trackList) || Number(data.page) !== page) throw new Error('喜马拉雅主播作品响应无效');
+  let shows = [];
+  if (offset === 0) {
+    try {
+      const { data: albums } = await request('/revision/user/pub', { uid: id, page: 1, pageSize: PAGE_SIZE, keyWord: '' });
+      if (Array.isArray(albums?.albumList)) shows = albums.albumList.map(item => toShow({ ...item, anchorName: info.nickName }));
+    } catch (error) { if (error.code === 'signIn') throw error; }
+  }
+  const items = data.trackList.slice(offset % PAGE_SIZE).map(item => rememberTrack(toTrack({ ...item, anchorUid: id, nickname: info.nickName })));
+  const more = hasMore(data, data.trackList.length, (page - 1) * PAGE_SIZE + data.trackList.length, data.maxCount ?? data.totalCount);
+  if (more && !items.length) throw new Error('喜马拉雅主播分页未前进');
+  return { artist: { id, name: info.nickName, imageUrl: imageURL(info.cover), description: text(info.personalDescription || info.personalSignature) }, tracks: items, shows, more };
 }
