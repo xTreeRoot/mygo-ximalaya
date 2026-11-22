@@ -1,18 +1,73 @@
 {
   "id": "ximalaya",
   "name": "喜马拉雅",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "minAppVersion": "0.1.20",
   "main": "index.js",
   "playback": "stream",
   "permissions": {
-    "network": ["www.ximalaya.com", "passport.ximalaya.com", "*.xmcdn.com"]
+    "network": [
+      "www.ximalaya.com",
+      "passport.ximalaya.com",
+      "*.xmcdn.com"
+    ]
   },
   "navigation": [
-    { "title": "首页", "builtin": "home" },
-    { "title": "我的订阅", "page": "subscriptions", "icon": "podcast" },
-    { "title": "已购专辑", "page": "purchases", "icon": "album" },
-    { "title": "最近收听", "page": "recent", "icon": "calendar" },
-    { "title": "本机记录", "page": "local-recent", "icon": "playlist" }
+    {
+      "title": "首页",
+      "builtin": "home"
+    },
+    {
+      "title": "我的订阅",
+      "page": "subscriptions",
+      "icon": "podcast"
+    },
+    {
+      "title": "已购专辑",
+      "page": "purchases",
+      "icon": "album"
+    },
+    {
+      "title": "最近收听",
+      "page": "recent",
+      "icon": "calendar"
+    },
+    {
+      "title": "本机记录",
+      "page": "local-recent",
+      "icon": "playlist"
+    }
+  ],
+  "discovery": [
+    {
+      "id": "discover",
+      "title": "发现专辑",
+      "page": "discover"
+    },
+    {
+      "id": "subscriptions",
+      "title": "我的订阅",
+      "page": "subscriptions"
+    },
+    {
+      "id": "purchases",
+      "title": "已购专辑",
+      "page": "purchases"
+    },
+    {
+      "id": "recent",
+      "title": "最近收听",
+      "page": "recent"
+    },
+    {
+      "id": "local-recent",
+      "title": "本机记录",
+      "page": "local-recent"
+    },
+    {
+      "id": "viewed",
+      "title": "浏览过的专辑",
+      "page": "viewed"
+    }
   ]
 }

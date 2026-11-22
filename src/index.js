@@ -49,6 +49,7 @@ export async function home() {
 }
 
 export async function browse({ page }) {
+  if (page === "viewed") { const viewed = host.storage.get("viewedShows"); return { title: "浏览过的专辑", sections: [{ shows: Array.isArray(viewed) ? viewed : [], empty: "暂无浏览记录" }] }; }
   if (page === "local-recent") return { title: "本机记录", subtitle: "此设备的收听记录", sections: [{ tracks: localRecent(), empty: "还没有收听记录" }] };
   if (page === "account") {
     const me = await requireAccount();

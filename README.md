@@ -2,7 +2,7 @@
 
 面向 [MyGo Music](https://github.com/egoist/mygo-music) 的独立喜马拉雅插件，无需额外服务。
 
-需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.7`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。桌面、iOS 与 Android 使用同一份脚本和安装包。
+需要 **MyGo Music 0.1.20 或更新版本**。当前兼容版为 `0.1.8`，基于 [specialhua/mygo-ximalaya](https://github.com/specialhua/mygo-ximalaya)。桌面、iOS 与 Android 使用同一份脚本和安装包。
 
 ## 功能
 
