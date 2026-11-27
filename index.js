@@ -965,7 +965,7 @@ async function stream({ id, quality = "high" }) {
 }
 
 // src/playlists.js
-var target = { id: "liked-tracks", name: "我喜欢的声音", mine: true, fixed: true, addable: true };
+var target = { id: "liked-tracks", name: "我喜欢的声音", mine: true, fixed: true, addable: true, removable: true };
 async function playlists() {
   await requireAccount();
   return [{ ...target }];
@@ -1007,7 +1007,7 @@ async function like({ id, on }) {
   await request("/revision/like/" + (on ? "setLikeTrack" : "cancelLikeTrack"), {}, { body: { trackId: id } });
 }
 var likeEpisode = like;
-async function addToPlaylist({ id, trackIds }) {
+async function changeList({ id, trackIds }, on) {
   if (id !== target.id) throw fail("unsupported", "只能添加到“我喜欢的声音”平台列表");
   if (!Array.isArray(trackIds) || !trackIds.length || trackIds.length > 100) throw new Error("无效的声音列表");
   const ids = [...new Set(trackIds.map(idOf))];
@@ -1015,8 +1015,14 @@ async function addToPlaylist({ id, trackIds }) {
   const generation2 = epoch();
   for (const trackId of ids) {
     assertCurrent(generation2);
-    await like({ id: trackId, on: true });
+    await like({ id: trackId, on });
   }
+}
+function addToPlaylist(input) {
+  return changeList(input, true);
+}
+function removeFromPlaylist(input) {
+  return changeList(input, false);
 }
 
 // src/index.js
@@ -1093,6 +1099,7 @@ export {
   playlist,
   playlists,
   recent2 as recent,
+  removeFromPlaylist,
   search,
   show,
   signIn,

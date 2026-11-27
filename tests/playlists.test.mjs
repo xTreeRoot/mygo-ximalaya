@@ -15,7 +15,7 @@ test('platform target writes real liked-track forms and preserves account scopin
  },savedSession());
  const [target]=await plugin.playlists();assert.equal(target.mine,true);assert.equal(target.fixed,true);assert.equal(target.addable,true);
  await plugin.addToPlaylist({id:target.id,trackIds:['123','123']});
- await plugin.like({id:'123',on:false});
+ await plugin.removeFromPlaylist({id:target.id,trackIds:['123']});
  assert.deepEqual(writes,[['/revision/like/setLikeTrack','123'],['/revision/like/cancelLikeTrack','123']]);
  await assert.rejects(plugin.addToPlaylist({id:'foreign',trackIds:['123']}),/我喜欢/);
  await assert.rejects(plugin.addToPlaylist({id:target.id,trackIds:['123','bad']}),/ID/);

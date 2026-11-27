@@ -5,7 +5,7 @@ import { epoch, assertCurrent } from './session.js';
 import { toTrack } from './models.js';
 import { PAGE_SIZE, idOf, offsetOf, fail } from './utils.js';
 
-const target = { id: 'liked-tracks', name: '我喜欢的声音', mine: true, fixed: true, addable: true };
+const target = { id: 'liked-tracks', name: '我喜欢的声音', mine: true, fixed: true, addable: true, removable: true };
 export async function playlists() { await requireAccount(); return [{ ...target }]; }
 
 export async function liked({ offset = 0 } = {}) {
@@ -49,11 +49,14 @@ export async function like({ id, on }) {
 }
 export const likeEpisode = like;
 
-export async function addToPlaylist({ id, trackIds }) {
+async function changeList({ id, trackIds }, on) {
   if (id !== target.id) throw fail('unsupported', '只能添加到“我喜欢的声音”平台列表');
   if (!Array.isArray(trackIds) || !trackIds.length || trackIds.length > 100) throw new Error('无效的声音列表');
   const ids = [...new Set(trackIds.map(idOf))];
   await requireAccount();
   const generation = epoch();
-  for (const trackId of ids) { assertCurrent(generation); await like({ id: trackId, on: true }); }
+  for (const trackId of ids) { assertCurrent(generation); await like({ id: trackId, on }); }
 }
+
+export function addToPlaylist(input) { return changeList(input, true); }
+export function removeFromPlaylist(input) { return changeList(input, false); }
