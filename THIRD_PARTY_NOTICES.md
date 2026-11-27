@@ -33,7 +33,7 @@ This is an unofficial plugin. Playback uses the service's returned permissions;
 the plugin does not grant access to content a listener is not entitled to play.
 
 
-MB compatibility changes by xTreeRoot on 2026-11-19 are based on
+山海 compatibility changes by xTreeRoot on 2026-11-19 are based on
 specialhua/mygo-ximalaya commit `5084fa6` (version 0.1.4). When an episode
 has no FLAC variant, lossless requests use an available high/standard variant
 and report the actual quality. Source: https://github.com/xTreeRoot/mygo-ximalaya,
