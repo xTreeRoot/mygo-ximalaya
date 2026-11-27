@@ -16,7 +16,9 @@ export async function request(path, params = {}, options = {}) {
   let response;
   let body;
   try {
-    response = await fetch(url.toString(), { headers, signal: controller.signal, redirect: "error" });
+    if (options.body != null) headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8";
+    response = await fetch(url.toString(), { headers, signal: controller.signal, redirect: "error",
+      method: options.body == null ? "GET" : "POST", ...(options.body == null ? {} : { body: new URLSearchParams(options.body).toString() }) });
     assertCurrent(started);
     const wasSignedIn = signedIn(active);
     acceptCookies(response, active);

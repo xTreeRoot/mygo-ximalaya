@@ -104,3 +104,7 @@ AGPL-3.0-only。依赖和协议参考见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NO
 ## 0.1.9
 
 新增主播主页，展示头像、介绍、作品和节目专辑；作品支持触底分页，正确转换官网时长。
+
+### 0.1.10
+
+“我喜欢的声音”接入平台列表与红心。播放器和歌曲列表可以将单集真正添加到喜马拉雅账号的这个列表；也可取消喜欢。使用官网公开的 `/revision/my/getLikeTracks` 分页和 `/revision/like/setLikeTrack`、`cancelLikeTrack` 表单合同（已对照官网脚本 1e1a58.js 和 96cb09.js）。该系统列表不可改名或删除，但声明 `addable` 允许宿主添加。当前未实现 App 自建听单的创建与编辑，不使用会公开发布内容的转载专辑接口冒充。真实账号写入尚未验收。

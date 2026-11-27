@@ -5,6 +5,7 @@ import { artist, history, historyPage, played, purchasePage, purchases, recent a
 
 export { account, artist, played, search, show, signIn };
 export { stream } from "./playback.js";
+export { playlists, playlist, liked, isLiked, like, likeEpisode, addToPlaylist } from "./playlists.js";
 
 export function signOut() { clearSession(); }
 export function cancelSignIn() { beginSignIn(); }
